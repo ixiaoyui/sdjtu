@@ -10,16 +10,16 @@ liebiao = {}
 
 
 
-def hqlianjie():
-    res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
-    res2.encoding = 'utf=8'
-    soup2 = BeautifulSoup(res2.text,'html.parser')
-    lianjie = []
-    for new in soup2.select('.pagedContent'):
-        lianjie.append(new.select('a')[0]['href'])
-    return lianjie
+#def hqlianjie():#取得新闻链接
+    #res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
+    #res2.encoding = 'utf=8'
+    #soup2 = BeautifulSoup(res2.text,'html.parser')
+    #lianjie = []
+    #for new in soup2.select('.pagedContent'):
+        #lianjie.append(new.select('a')[0]['href'])
+    #return lianjie
 
-def yuedushuhq(newsurl):
+def yuedushuhq(newsurl):#获取新闻阅读数
     
     res3 = requests.get(newsurl)
     res3.encoding = 'utf=8'
@@ -34,7 +34,7 @@ def yuedushuhq(newsurl):
     yuedushu= str(yuedu['result']).lstrip('[').rstrip(']')#取得阅读数
     return yuedushu
 
-def liebiaolink():
+def liebiaolink():#取得新闻链接
     res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
     res2.encoding = 'utf=8'
     soup2 = BeautifulSoup(res2.text,'html.parser')
@@ -48,7 +48,7 @@ def liebiaolink():
 
 jishu = 0
     
-def neirong(link1):
+def neirong(link1):#获取新闻内容
     global jishu
     #print(jishu)  
     jieguo = {}
@@ -62,9 +62,7 @@ def neirong(link1):
         res = requests.get(link1)
         res.encoding = 'utf=8'
         soup = BeautifulSoup(res.text,'html.parser')
-        
         duanluo = (soup.select('#content p'))
-        
         ceshi = len(soup.select('#content p'))
         #print(ceshi)
         
@@ -74,22 +72,20 @@ def neirong(link1):
             jieguotext = ''
             for pp in duanluo:
                 ppp = re.search('(src=")(.+)"',str(pp))
-                #print(ppp[1])
-                
                 if ppp:
                     #print(ppp[2])
                     tplink = 'http://www.sdjtu.edu.cn' + ppp[2]
                     print(tplink)
                     mulu1 = ''
                     mulu1 = ('D:\\workspace\\123\\12\\' + str(jishu))
-                    if os.path.exists(mulu1) == False:
+                    if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
                         os.makedirs(mulu1)
                         print('创建文件夹' + str(jishu))
                     #newmulu = os.path.join('D:\\workspace\\123\\12',str(jishu))
                     tpwenjian = open(os.path.join(str(jishu),os.path.basename(ppp[2])),'wb')
                     #print(tplink)
                     tpdata = requests.get(tplink)
-                    for data in tpdata.iter_content(100000):
+                    for data in tpdata.iter_content(100000):#保存图片
                         tpwenjian.write(data)
                     tpwenjian.close()
                     n = n + 1
@@ -110,7 +106,7 @@ def neirong(link1):
                         n = n + 1
                         #jishu = jishu + 1
             jieguo['neirong'] = jieguotext            
-            jieguo['yuedushu'] = yuedushuhq(link1)#取得阅读数
+            jieguo['yuedushu'] = yuedushuhq(link1)
             shijian = soup.select('div[align="center"]')[2]
             shijian2 = str(shijian)
             m = re.search('    (.+)    ',shijian2)
@@ -120,22 +116,21 @@ def neirong(link1):
     
         if ceshi == 1:
                 jieguo['neirong'] = str(soup.select('#content p')[0].text.replace('\xa0',''))            
-                jieguo['yuedushu'] = yuedushuhq(link1)#取得阅读数
+                jieguo['yuedushu'] = yuedushuhq(link1)
                 shijian = soup.select('div[align="center"]')[2]
                 shijian2 = str(shijian)
                 m = re.search('    (.+)    ',shijian2)
                 jieguo['time'] = m[1]
                 jieguo['laiyuan'] = soup.select('a[target="_blank"]' )[-2].text
                 jieguo['biaoti'] = liebiaolink()[link1]
-                #jishu = jishu + 1
-        #jishu = jishu + 1    
-    except:
-             
+    
+    except: 
             pass
     jishu = jishu + 1
     return jieguo
+
 huizong = []
-count = 40
+count = 3
 liebiaolink()
 for link in liebiao:
     if count > 0:
