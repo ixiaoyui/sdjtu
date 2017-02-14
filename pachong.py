@@ -1,5 +1,7 @@
-﻿#-*- coding: utf-8 -*-
-    #改成多线程的了，每个页面使用一个线程，速度快了很多，不过爬的图片不能分类存放了，都在一个文件夹里
+#-*- coding: utf-8 -*-
+'''
+改成多线程的了，每个页面使用一个线程，速度快了很多，不过爬的图片不能分类存放了，都在一个文件夹里
+'''
 import re
 import json
 import requests
@@ -13,15 +15,16 @@ import threading
 liebiao = []
 huizong = []
 
-
-#def hqlianjie():#取得新闻链接
-    #res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
-    #res2.encoding = 'utf=8'
-    #soup2 = BeautifulSoup(res2.text,'html.parser')
-    #lianjie = []
-    #for new in soup2.select('.pagedContent'):
-        #lianjie.append(new.select('a')[0]['href'])
-    #return lianjie
+'''
+def hqlianjie():#取得新闻链接
+    res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
+    res2.encoding = 'utf=8'
+    soup2 = BeautifulSoup(res2.text,'html.parser')
+    lianjie = []
+    for new in soup2.select('.pagedContent'):
+        lianjie.append(new.select('a')[0]['href'])
+    return lianjie
+'''
 
 def yuedushuhq(newsurl):#获取新闻阅读数
     
