@@ -1,4 +1,5 @@
 ﻿#-*- coding: utf-8 -*-
+    #改成多线程的了，每个页面使用一个线程，速度快了很多，不过爬的图片不能分类存放了，都在一个文件夹里
 import re
 import json
 import requests
