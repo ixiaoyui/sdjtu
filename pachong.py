@@ -82,9 +82,9 @@ def neirong(args):#获取新闻内容
                     print(tplink)
                     mulu1 = 'D:\\workspace\\123\\12\\pachong2\\'
                     #mulu1 = ('D:\\workspace\\123\\12\\pachong\\' + str(jishu))
-                    #if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
-                        #os.makedirs(mulu1)
-                        #print('创建文件夹' + str(jishu))
+                    if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
+                        os.makedirs(mulu1)
+                        print('创建文件夹')
                     #newmulu = os.path.join('D:\\workspace\\123\\12',str(jishu))
                     tpwenjian = open(os.path.join(mulu1,os.path.basename(ppp[2])),'wb')
                     #print(tplink)
