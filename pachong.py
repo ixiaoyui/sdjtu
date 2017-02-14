@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+﻿#-*- coding: utf-8 -*-
 import re
 import json
 import requests
@@ -6,8 +6,11 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import pandas
 import os
-liebiao = {}
+import threading
+from IPython.utils.path import link
 
+liebiao = []
+huizong = []
 
 
 #def hqlianjie():#取得新闻链接
@@ -42,24 +45,25 @@ def liebiaolink():#取得新闻链接
     
     #news = soup2.select('.pagedContent')
     for new in soup2.select('.pagedContent'):
-        liebiao[new.select('a')[0]['href']] = new.select('a')[0]['title']
+        xwlianjie = new.select('a')[0]['href']
+        liebiao.append(xwlianjie)
         #liebiao['lianjie'] = 
+    print('我执行了一次！')    
     return liebiao
 
 jishu = 0
     
-def neirong(link1):#获取新闻内容
+def neirong(args):#获取新闻内容
     global jishu
+    global huizong
     #print(jishu)  
     jieguo = {}
     #liebiao = {}
-    res = requests.get(link1)
-    res.encoding = 'utf=8'
-    soup = BeautifulSoup(res.text,'html.parser')
+   
     try:
         jieguo = {}
             #liebiao = {}
-        res = requests.get(link1)
+        res = requests.get(args)
         res.encoding = 'utf=8'
         soup = BeautifulSoup(res.text,'html.parser')
         duanluo = (soup.select('#content p'))
@@ -76,13 +80,13 @@ def neirong(link1):#获取新闻内容
                     #print(ppp[2])
                     tplink = 'http://www.sdjtu.edu.cn' + ppp[2]
                     print(tplink)
-                    mulu1 = ''
-                    mulu1 = ('D:\\workspace\\123\\12\\' + str(jishu))
-                    if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
-                        os.makedirs(mulu1)
-                        print('创建文件夹' + str(jishu))
+                    mulu1 = 'D:\\workspace\\123\\12\\pachong2\\'
+                    #mulu1 = ('D:\\workspace\\123\\12\\pachong\\' + str(jishu))
+                    #if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
+                        #os.makedirs(mulu1)
+                        #print('创建文件夹' + str(jishu))
                     #newmulu = os.path.join('D:\\workspace\\123\\12',str(jishu))
-                    tpwenjian = open(os.path.join(str(jishu),os.path.basename(ppp[2])),'wb')
+                    tpwenjian = open(os.path.join(mulu1,os.path.basename(ppp[2])),'wb')
                     #print(tplink)
                     tpdata = requests.get(tplink)
                     for data in tpdata.iter_content(100000):#保存图片
@@ -106,41 +110,50 @@ def neirong(link1):#获取新闻内容
                         n = n + 1
                         #jishu = jishu + 1
             jieguo['neirong'] = jieguotext            
-            jieguo['yuedushu'] = yuedushuhq(link1)
+            jieguo['yuedushu'] = yuedushuhq(args)
             shijian = soup.select('div[align="center"]')[2]
             shijian2 = str(shijian)
             m = re.search('    (.+)    ',shijian2)
             jieguo['time'] = m[1]
             jieguo['laiyuan'] = soup.select('a[target="_blank"]' )[-2].text
-            jieguo['biaoti'] = liebiaolink()[link1]
+            jieguo['biaoti'] = soup.select('td[align="center"] p')[0].text
     
         if ceshi == 1:
                 jieguo['neirong'] = str(soup.select('#content p')[0].text.replace('\xa0',''))            
-                jieguo['yuedushu'] = yuedushuhq(link1)
+                jieguo['yuedushu'] = yuedushuhq(args)
                 shijian = soup.select('div[align="center"]')[2]
                 shijian2 = str(shijian)
                 m = re.search('    (.+)    ',shijian2)
                 jieguo['time'] = m[1]
                 jieguo['laiyuan'] = soup.select('a[target="_blank"]' )[-2].text
-                jieguo['biaoti'] = liebiaolink()[link1]
+                jieguo['biaoti'] = soup.select('td[align="center"] p')[0].text
     
     except: 
             pass
-    jishu = jishu + 1
-    return jieguo
+    #jishu = jishu + 1
+    huizong.append(jieguo)
+    
 
-huizong = []
-count = 3
-liebiaolink()
-for link in liebiao:
-    if count > 0:
-        huizong.append(neirong(link))
-        count = count - 1
-    else:
-        df = pandas.DataFrame(huizong)
-        df.to_excel('news88.xlsx')
-        print('已生成Excel文档！')
-        break
-#print(neirong('http://www.sdjtu.edu.cn/articles/ch01410/201701/553b499f-df45-4cce-a575-468056dcd282.shtml'))
+lianjie = liebiaolink()
+#print(len(lianjie))
+#print(lianjie[0])
+
+'''
+neirong(lianjie[0])
+print(huizong)
+'''
+
+
+xzxc = []
+for i in range(0,1900):
+    xz1 = threading.Thread(target=neirong(lianjie[i]))
+    xzxc.append(xz1)
+    xz1.start()
+    
+for xz1 in xzxc:
+    xz1.join()
+df = pandas.DataFrame(huizong)
+df.to_excel('news88.xlsx')
+print('已生成Excel文档！')
 
 
