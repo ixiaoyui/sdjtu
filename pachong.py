@@ -2,29 +2,14 @@
 '''
 改成多线程的了，每个页面使用一个线程，速度快了很多，不过爬的图片不能分类存放了，都在一个文件夹里
 '''
+#-*- coding: utf-8 -*-
 import re
 import json
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
 import pandas
 import os
 import threading
-
-
-liebiao = []
-huizong = []
-
-'''
-def hqlianjie():#取得新闻链接
-    res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
-    res2.encoding = 'utf=8'
-    soup2 = BeautifulSoup(res2.text,'html.parser')
-    lianjie = []
-    for new in soup2.select('.pagedContent'):
-        lianjie.append(new.select('a')[0]['href'])
-    return lianjie
-'''
 
 def yuedushuhq(newsurl):#获取新闻阅读数
     
@@ -42,17 +27,15 @@ def yuedushuhq(newsurl):#获取新闻阅读数
     return yuedushu
 
 def liebiaolink():#取得新闻链接
+    print("正在初始化爬虫参数！")
     res2 = requests.get('http://www.sdjtu.edu.cn/channels/ch01410/')
     res2.encoding = 'utf=8'
     soup2 = BeautifulSoup(res2.text,'html.parser')
-    #for news in soup.select
-    
-    #news = soup2.select('.pagedContent')
     for new in soup2.select('.pagedContent'):
         xwlianjie = new.select('a')[0]['href']
         liebiao.append(xwlianjie)
         #liebiao['lianjie'] = 
-    print('我执行了一次！')    
+    print('\n初始化完成！\n')    
     return liebiao
 
 jishu = 0
@@ -60,10 +43,6 @@ jishu = 0
 def neirong(args):#获取新闻内容
     global jishu
     global huizong
-    #print(jishu)  
-    jieguo = {}
-    #liebiao = {}
-   
     try:
         jieguo = {}
             #liebiao = {}
@@ -72,10 +51,9 @@ def neirong(args):#获取新闻内容
         soup = BeautifulSoup(res.text,'html.parser')
         duanluo = (soup.select('#content p'))
         ceshi = len(soup.select('#content p'))
-        #print(ceshi)
         
         if ceshi > 1:
-            
+           
             n = 0
             jieguotext = ''
             for pp in duanluo:
@@ -83,13 +61,9 @@ def neirong(args):#获取新闻内容
                 if ppp:
                     #print(ppp[2])
                     tplink = 'http://www.sdjtu.edu.cn' + ppp[2]
-                    print(tplink)
-                    mulu1 = 'D:\\workspace\\123\\12\\pachong2\\'
-                    #mulu1 = ('D:\\workspace\\123\\12\\pachong\\' + str(jishu))
-                    if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
-                        os.makedirs(mulu1)
-                        print('创建文件夹')
-                    #newmulu = os.path.join('D:\\workspace\\123\\12',str(jishu))
+                    print("获取新闻图片！" + tplink)
+                    mulu1 = 'D:\\12\\pachong2\\'
+                    
                     tpwenjian = open(os.path.join(mulu1,os.path.basename(ppp[2])),'wb')
                     #print(tplink)
                     tpdata = requests.get(tplink)
@@ -97,8 +71,7 @@ def neirong(args):#获取新闻内容
                         tpwenjian.write(data)
                     tpwenjian.close()
                     n = n + 1
-                    #jishu = jishu + 1
-                    #print(n)
+
                 else:
                     jieguo = {'neirong':''}
                     #jieguo2 = {}
@@ -107,14 +80,18 @@ def neirong(args):#获取新闻内容
                     #print(duanluo1)
                     if len(duanluo1) > 0:
                         jieguotext = jieguotext + duanluo1
-                        #print(jieguotext)
+
                         n = n + 1
-                        #jishu = jishu + 1
+
                     else:
                         n = n + 1
-                        #jishu = jishu + 1
-            jieguo['neirong'] = jieguotext            
-            jieguo['yuedushu'] = yuedushuhq(args)
+
+            jieguo['neirong'] = jieguotext       
+            try:
+                     
+                jieguo['yuedushu'] = yuedushuhq(args)
+            except:
+                pass
             shijian = soup.select('div[align="center"]')[2]
             shijian2 = str(shijian)
             m = re.search('    (.+)    ',shijian2)
@@ -123,8 +100,12 @@ def neirong(args):#获取新闻内容
             jieguo['biaoti'] = soup.select('td[align="center"] p')[0].text
     
         if ceshi == 1:
-                jieguo['neirong'] = str(soup.select('#content p')[0].text.replace('\xa0',''))            
-                jieguo['yuedushu'] = yuedushuhq(args)
+                jieguo['neirong'] = str(soup.select('#content p')[0].text.replace('\xa0',''))
+                try:
+                                
+                    jieguo['yuedushu'] = yuedushuhq(args)
+                except:
+                    pass
                 shijian = soup.select('div[align="center"]')[2]
                 shijian2 = str(shijian)
                 m = re.search('    (.+)    ',shijian2)
@@ -134,30 +115,73 @@ def neirong(args):#获取新闻内容
     
     except: 
             pass
-    #jishu = jishu + 1
+
     huizong.append(jieguo)
     
 
-lianjie = liebiaolink()
-#print(len(lianjie))
-#print(lianjie[0])
-
-'''
-neirong(lianjie[0])
-print(huizong)
-'''
-
-
-xzxc = []
-for i in range(0,1900):
-    xz1 = threading.Thread(target=neirong(lianjie[i]))
-    xzxc.append(xz1)
-    xz1.start()
+def shuru():
+    global xzxc 
     
-for xz1 in xzxc:
-    xz1.join()
-df = pandas.DataFrame(huizong)
-df.to_excel('news88.xlsx')
-print('已生成Excel文档！')
+    global name
+    name = ""
+    t = 1
+    global x
+    global y
+    try:
+        x = int(input("请输入新闻起始位置（整数，大于等于1）：\n"))
+        y = int(input("请输入要新闻结束位置（整数，大于等于起始条数）：\n"))
+        
+        #print(x,y)
+        if x >= 1:
+            #z = y - x
+            if ((y >= x) and (y < 600)):
+                x -= 1
+                #y += 1
+                #print(x,y)
+            else:
+                print("输入错误，请重新输入！")
+                return shuru()
+        else:
+            print("输入错误，请重新输入！")
+            return shuru()
+    except:
+        print("输入错误，请重新输入！")
+        return shuru()
+    
+    else:
+        name = input("请输入保存新闻的excel文件名称：\n")
+        #print(x,y)
+        for i in range(x,y):
+            xz1 = threading.Thread(target=neirong,args=(lianjie[i],))
+            xzxc.append(xz1)
+        for i in range(x,y):
+            xzxc[i].start()
+            print("我启动了第%s线程获取新闻！" %(t))
+            t += 1
+        for xz1 in xzxc:
+            xz1.join()
+        
+def yunxing():
+    print("-------------山东交通学院官网新闻抓取程序--------------\n----------------请以管理员身份运行！-----------------")
+    global lianjie
+    global xzxc
+    global huizong
+    global liebiao
+    xzxc = []
+    huizong = []
+    liebiao = []
+    lianjie = liebiaolink()
+    mulu1 = 'D:\\12\\pachong2\\'
+    if os.path.exists(mulu1) == False:#判断存放图片的文件夹是否存在
+        os.makedirs(mulu1)
+        print('创建文件夹')            
+    shuru()
+    df = pandas.DataFrame(huizong)
+    df.to_excel('%s.xlsx' %(name))
+    print('\n已生成%s.xlsx！存放在本程序所在目录\n新闻图片存放在D:\\12\\pachong2\\目录中\n' %(name))
+    jieshu = input("输入r重新运行本程序，输入其他字符结束程序！\n")
+    if jieshu == "r":
+        return yunxing()
+    
 
-
+yunxing()
